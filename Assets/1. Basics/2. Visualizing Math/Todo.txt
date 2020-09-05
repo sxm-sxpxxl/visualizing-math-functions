@@ -1,0 +1,43 @@
+TODO:
+
+- 1) Добавить поддержку отображения Unity Cube в перспективной/ортографической проекции 
+     с возможностью выбора режима отображения в меню настроек 
+     (отдельная вкладка для Unity Cube: Show Unity Cube; Projection: Perspective/Orthographic 
+     (отображается, если Show Unity Cube = true (или нет, мб не надо такой возни, подумай еще))).
+- 2) Добавить возможность настраивать порядок рендера итогового изображения от двух камер 
+     (#1 - Perspective - Main Player Camera; #2 - Orthographic; Depth of #1 > Depth of #2) 
+     с помощью 4-х настроек (Clearing Flags, Active от обоих камер). 
+     
+     Возможные варианты:
+     
+     1) #1 - Active = true, Clearing Flags = Solid Color | #2 - Active = true/false, Clearing Flags = Solid Color/Depth Only
+            - изображение от ПЕРВОЙ камеры полностью перекрывает изображение от ВТОРОЙ
+                (потому что у Depth of #1 > Depth of #2 и #1 Clearing Flags = Solid Color)
+     
+     2) #1 - Active = true, Clearing Flags = Depth Only | #2 - Active = true, Clearing Flags = Solid Color
+            - изображение от ПЕРВОЙ камеры накладывается поверх изображения от ВТОРОЙ без смазывания
+          
+     3) #1 - Active = true, Clearing Flags = Depth Only | #2 - Active = false, Clearing Flags = Solid Color/Depth Only
+            - итоговое изображение формируется исключительно ПЕРВОЙ камерой со смазыванием
+          
+     4) #1 - Active = true, Clearing Flags = Depth Only | #2 - Active = true, Clearing Flags = Depth Only
+            - изображение от ПЕРВОЙ камеры накладывается поверх изображения от ВТОРОЙ и оба смазываются
+          
+     5) #1 - Active = false, Clearing Flags = Solid Color/Depth Only | #2 - Active = true, Clearing Flags = Solid Color
+            - итоговое изображение формируется исключительно ВТОРОЙ камерой без смазывания
+          
+     6) #1 - Active = false, Clearing Flags = Solid Color/Depth Only | #2 - Active = true, Clearing Flags = Depth Only
+            - итоговое изображение формируется исключительно ВТОРОЙ камерой со смазыванием
+          
+     Примечания:
+        - Как минимум одна камера должна быть Active для рендера итогового изображения;
+        - Необходимо вводить дополнительные блокирующие условия
+            (например, если выключена одна камера, то недоступна возможность выключить другую; 
+            когда #1 Clearing Flags = Solid Color изменение #2 Active, Clearing Flags не дает видимых результатов для пользователя, 
+            поэтому эти настройки должны быть недоступны)
+        - В панели настроек настройки камеры должны быть упакованы в сворачивающуюся панель и должны быть визуально связаны (как в инспекторе Unity)
+        - Настройки дезейблятся, но не сбрасываются
+        - Использовать машину состояний
+        - Clearing Flags и Active заменить наверное стоит на более подходящие термины для пользователя
+        - Мб с битовыми масками поебаться ради прекола стоит
+        - Добавить Clipping Planes в настройки

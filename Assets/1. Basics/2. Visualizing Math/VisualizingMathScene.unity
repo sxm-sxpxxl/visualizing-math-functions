@@ -404,7 +404,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7036c1babb25db4a6845271aedc90e3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  functionName: 9
+  functionName: 4
   pointPrefab: {fileID: 1800815256053733565, guid: 9552ce4aa6c58a4c192eea2f9689e7c3,
     type: 3}
   resolution: 50
@@ -1339,12 +1339,12 @@ GameObject:
   - component: {fileID: 1197707182}
   - component: {fileID: 1197707181}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Unity Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1197707181
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1412,13 +1412,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1197707180}
-  m_LocalRotation: {x: -0.24146466, y: 0.37890056, z: -0.15023708, w: 0.8806577}
+  m_LocalRotation: {x: -0.27270308, y: 0.43670344, z: -0.13687293, w: 0.8462795}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: -18.146, y: 51.137, z: -28.101002}
+  m_LocalEulerAnglesHint: {x: -20, y: 60, z: -30}
 --- !u!1 &1198309012
 GameObject:
   m_ObjectHideFlags: 0
