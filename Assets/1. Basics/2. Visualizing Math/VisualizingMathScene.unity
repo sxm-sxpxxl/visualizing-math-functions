@@ -481,7 +481,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 24599877}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 557de604da3d9401b926fb208f0c71f7, type: 3}
   m_Name: 
@@ -821,7 +821,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 62617164}
   m_TextComponent: {fileID: 476394758}
   m_Placeholder: {fileID: 1654291695}
@@ -1044,9 +1044,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playlist:
-  - {fileID: 8300000, guid: 70bc44310acb19697aa39ab37fa68971, type: 3}
-  - {fileID: 8300000, guid: 2055c1942e9c80a5aa97f0bf4ee39b04, type: 3}
-  - {fileID: 8300000, guid: f2e8254795d6b63b3b323951ad8d2257, type: 3}
+  - {fileID: 8300000, guid: 8ed9f4c3ca3afd7e5a282d9ddf8a07eb, type: 3}
+  - {fileID: 8300000, guid: 602c09efbbcd844edbba4c9a879c8c29, type: 3}
+  - {fileID: 8300000, guid: 5d9a03aec2d1f38459cc824c16e5f701, type: 3}
+  - {fileID: 8300000, guid: ab32e6f7607880fc696b6cd499560a7a, type: 3}
+  - {fileID: 8300000, guid: 421fdd9aea3666222b7186a5b8d304ef, type: 3}
+  - {fileID: 8300000, guid: 6b7a258b108d839a39d95f3b3c246ac4, type: 3}
   playTrackButton: {fileID: 992651217}
   playSprite: {fileID: 21300000, guid: f59631df276b283089e0c4997caac9ab, type: 3}
   pauseSprite: {fileID: 21300000, guid: c3615018fdbe0ef17bec19e23dabf334, type: 3}
@@ -1532,7 +1535,7 @@ MonoBehaviour:
   functionName: 4
   pointPrefab: {fileID: 1800815256053733565, guid: 9552ce4aa6c58a4c192eea2f9689e7c3,
     type: 3}
-  resolution: 50
+  resolution: 80
 --- !u!114 &142818250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4473,7 +4476,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 860384968}
   m_TextComponent: {fileID: 176310818}
   m_Placeholder: {fileID: 1291076086}
@@ -6714,7 +6717,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1263502450}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 557de604da3d9401b926fb208f0c71f7, type: 3}
   m_Name: 
@@ -7950,7 +7953,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.47266808, g: 0.45425418, b: 0.8301887, a: 0}
+  m_BackGroundColor: {r: 0.495283, g: 0.5587339, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -11152,7 +11155,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.47266808, g: 0.45425418, b: 0.8301887, a: 0}
+  m_BackGroundColor: {r: 0.495283, g: 0.5587339, b: 1, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0

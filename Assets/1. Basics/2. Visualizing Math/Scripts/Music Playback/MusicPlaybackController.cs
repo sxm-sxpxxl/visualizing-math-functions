@@ -16,12 +16,12 @@ public class MusicPlaybackController : MonoBehaviour
     [SerializeField] private Button playTrackButton;
     [SerializeField] private Sprite playSprite;
     [SerializeField] private Sprite pauseSprite;
-    
+
     [Header("Track info")]
     [SerializeField] private InputField trackTitleInputField;
     [SerializeField] private InputField trackAuthorInputField;
     [SerializeField] private Text trackDurationText;
-    
+
     [Header("Audio configuration")]
     [SerializeField] private Slider audioTimeSlider;
     [SerializeField] private Slider audioVolumeSlider;
@@ -34,26 +34,26 @@ public class MusicPlaybackController : MonoBehaviour
 
     private float _defaultAudioVolume;
     private float _defaultAudioPitch;
-    
+
     private AudioSource _audioSource;
     private int _currentTrackIndex;
     private Track _currentTrack;
     private readonly int _exposureTimeToResetTrackInSeconds = 5;
 
     private bool _isTrackTimeSliderDragged;
-    
+
     private void Start()
     {
         _audioVolumeText = audioVolumeButton.GetComponentInChildren<Text>();
         _audioPitchText = audioPitchButton.GetComponentInChildren<Text>();
-        
+
         _defaultAudioVolume = audioVolumeSlider.value;
         _defaultAudioPitch = audioPitchSlider.value;
-        
+
         _audioSource = GetComponent<AudioSource>();
         SetTrackInPlaylist(0);
     }
-    
+
     private void Update()
     {
         if (_audioSource.isPlaying)
@@ -62,7 +62,7 @@ public class MusicPlaybackController : MonoBehaviour
             var totalDuration = TimeSpan.FromSeconds(_audioSource.clip.length);
 
             trackDurationText.text = PrimitiveTypeExtensions.BuildStringInRelevantFormatWithSpans(currentDuration, totalDuration);
-            audioTimeSlider.value = (float) (currentDuration.TotalSeconds / totalDuration.TotalSeconds);
+            audioTimeSlider.value = (float)(currentDuration.TotalSeconds / totalDuration.TotalSeconds);
         }
     }
 
@@ -85,19 +85,19 @@ public class MusicPlaybackController : MonoBehaviour
     public void SetAudioVolume(float value)
     {
         _audioSource.volume = value;
-        _audioVolumeText.fontStyle = Mathf.Approximately(_defaultAudioVolume, value) 
-            ? FontStyle.Normal 
+        _audioVolumeText.fontStyle = Mathf.Approximately(_defaultAudioVolume, value)
+            ? FontStyle.Normal
             : FontStyle.Bold;
     }
 
     public void SetAudioPitch(float value)
     {
         _audioSource.pitch = value;
-        _audioPitchText.fontStyle = Mathf.Approximately(_defaultAudioPitch, value) 
-            ? FontStyle.Normal 
+        _audioPitchText.fontStyle = Mathf.Approximately(_defaultAudioPitch, value)
+            ? FontStyle.Normal
             : FontStyle.Bold;
     }
-    
+
     public void ResetAudioVolume()
     {
         audioVolumeSlider.value = _defaultAudioVolume;
@@ -107,13 +107,13 @@ public class MusicPlaybackController : MonoBehaviour
     {
         audioPitchSlider.value = _defaultAudioPitch;
     }
-    
+
     public void SetPrevTrackInPlaylist()
     {
         var nextTrackIndex = _audioSource.time < _exposureTimeToResetTrackInSeconds
             ? _currentTrackIndex - 1
             : _currentTrackIndex;
-        
+
         SetTrackInPlaylist(nextTrackIndex);
     }
 
@@ -130,7 +130,7 @@ public class MusicPlaybackController : MonoBehaviour
             SetTrackInPlaylist(0, false);
             return;
         }
-        
+
         SetTrackInPlaylist(_currentTrackIndex + 1);
     }
 
@@ -146,7 +146,7 @@ public class MusicPlaybackController : MonoBehaviour
 
     private void SetTrackInPlaylist(int trackIndex, bool play = true)
     {
-        _currentTrackIndex = Mathf.Clamp(trackIndex, 0, playlist.Length - 1);;
+        _currentTrackIndex = Mathf.Clamp(trackIndex, 0, playlist.Length - 1);
         _audioSource.clip = playlist[_currentTrackIndex];
         StopCurrentTrack();
         if (play) PlayCurrentTrack();

@@ -8,11 +8,12 @@ public class CamerasRenderController : MonoBehaviour
 {
     [SerializeField] private Camera masterCamera, slaveCamera;
 
-    [SerializeField] private Toggle masterIsActiveToggle,
+    [SerializeField]
+    private Toggle masterIsActiveToggle,
         masterIsClearDepthToggle,
         slaveIsActiveToggle,
         slaveIsClearDepthToggle;
-    
+
     [SerializeField] private Dropdown cameraRenderPresetDropdown;
 
     [SerializeField] private Color disabledToggleTextColor;
@@ -20,7 +21,7 @@ public class CamerasRenderController : MonoBehaviour
 
     private ICamerasRenderPipelineManager _camerasRenderPipelineManager;
 
-    private static readonly Dictionary<KeyCode, CameraRenderStatePropertyPath> MapOfKeyCodeToCameraStatePropertyPath = 
+    private static readonly Dictionary<KeyCode, CameraRenderStatePropertyPath> MapOfKeyCodeToCameraStatePropertyPath =
         new Dictionary<KeyCode, CameraRenderStatePropertyPath>
     {
         {
@@ -65,7 +66,7 @@ public class CamerasRenderController : MonoBehaviour
         _camerasRenderPipelineManager = new CamerasRenderPipelineManager();
         _defaultToggleTextColor = masterIsActiveToggle.GetComponentInChildren<Text>().color;
         cameraRenderPresetDropdown.options = DropdownUtility.GetOptionsForEnum<ECamerasRenderPreset>();
-        
+
         _mapOfToggleToKeyCode = new Dictionary<Toggle, KeyCode>
         {
             { masterIsActiveToggle, KeyCode.Alpha1 },
@@ -85,7 +86,7 @@ public class CamerasRenderController : MonoBehaviour
                 var keyCode = _mapOfToggleToKeyCode[toggle];
                 ToggleCameraRenderStateProperty(MapOfKeyCodeToCameraStatePropertyPath[keyCode]);
             });
-            
+
             toggle.gameObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry> { entry };
             _mapOfToggleToText[toggle] = toggle.GetComponentInChildren<Text>();
         }
@@ -104,10 +105,10 @@ public class CamerasRenderController : MonoBehaviour
     {
         var isPropertyEnabled = _camerasRenderPipelineManager[path.CameraPriorityType, path.EnabledPropertyName];
         if (isPropertyEnabled == false) return;
-        
+
         var currentValue = _camerasRenderPipelineManager[path.CameraPriorityType, path.FunctionalPropertyName];
         var nextValue = !currentValue;
-        
+
         _camerasRenderPipelineManager.SetCameraRenderStateFunctionalProperty(path, nextValue);
         UpdateUI();
         UpdateCameras();
@@ -115,14 +116,14 @@ public class CamerasRenderController : MonoBehaviour
 
     public void SetCameraRenderPreset(int cameraRenderPreset)
     {
-        _camerasRenderPipelineManager.SetCamerasRenderPreset((ECamerasRenderPreset) cameraRenderPreset);
+        _camerasRenderPipelineManager.SetCamerasRenderPreset((ECamerasRenderPreset)cameraRenderPreset);
         UpdateUI();
         UpdateCameras();
     }
-    
+
     private void UpdateUI()
     {
-        cameraRenderPresetDropdown.value = (int) _camerasRenderPipelineManager.CamerasRenderPreset;
+        cameraRenderPresetDropdown.value = (int)_camerasRenderPipelineManager.CamerasRenderPreset;
 
         foreach (var pair in _mapOfToggleToKeyCode)
             UpdateToggle(pair.Key, MapOfKeyCodeToCameraStatePropertyPath[pair.Value]);
