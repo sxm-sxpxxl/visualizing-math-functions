@@ -1,5 +1,20 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!206 &-7684214183889172794
+BlendTree:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Blend Tree
+  m_Childs: []
+  m_BlendParameter: Blend
+  m_BlendParameterY: Blend
+  m_MinThreshold: 0
+  m_MaxThreshold: 1
+  m_UseAutomaticThresholds: 1
+  m_NormalizedBlendValues: 0
+  m_BlendType: 0
 --- !u!1101 &-3314403154419242956
 AnimatorStateTransition:
   m_ObjectHideFlags: 1
@@ -54,8 +69,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Open Settings
-  m_Speed: 1
+  m_Name: Open
+  m_Speed: -1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -3314403154419242956}
@@ -68,7 +83,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 456e6798f6f7e53018c15ba4bb9d8b8b, type: 2}
+  m_Motion: {fileID: 7400000, guid: a375c294bbaaf5c26ac0f3f8135c058b, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -80,7 +95,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Panel_Settings
+  m_Name: ToggleAnimator
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: isOpen
@@ -127,7 +142,7 @@ AnimatorStateMachine:
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 20, y: 70, z: 0}
   m_EntryPosition: {x: 20, y: 120, z: 0}
-  m_ExitPosition: {x: 800, y: 120, z: 0}
+  m_ExitPosition: {x: 20, y: 320, z: 0}
   m_ParentStateMachinePosition: {x: 800, y: 20, z: 0}
   m_DefaultState: {fileID: 7710062656364980083}
 --- !u!1102 &6312262193572955157
@@ -137,8 +152,8 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Close Settings
-  m_Speed: -1
+  m_Name: Close
+  m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 7652854641079652516}
@@ -151,7 +166,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 456e6798f6f7e53018c15ba4bb9d8b8b, type: 2}
+  m_Motion: {fileID: 7400000, guid: a375c294bbaaf5c26ac0f3f8135c058b, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 

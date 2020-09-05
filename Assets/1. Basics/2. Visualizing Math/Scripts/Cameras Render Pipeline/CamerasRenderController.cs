@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class CamerasRenderController : MonoBehaviour
 {
-    [SerializeField] private Camera masterCamera;
-    [SerializeField] private Camera slaveCamera;
+    [SerializeField] private Camera masterCamera, slaveCamera;
 
-    [SerializeField] private Text masterIsActiveText,
-        masterIsClearDepthText,
-        slaveIsActiveText,
-        slaveIsClearDepthText;
+    [SerializeField] private Toggle masterIsActiveToggle,
+        masterIsClearDepthToggle,
+        slaveIsActiveToggle,
+        slaveIsClearDepthToggle;
     
     [SerializeField] private Dropdown cameraRenderPresetDropdown;
 
-    [SerializeField] private Color disabledTextColor;
-    private Color _defaultTextColor;
+    [SerializeField] private Color disabledToggleTextColor;
+    private Color _defaultToggleTextColor;
 
     private ICamerasRenderPipelineManager _camerasRenderPipelineManager;
 
@@ -58,21 +57,38 @@ public class CamerasRenderController : MonoBehaviour
         },
     };
 
-    private Dictionary<Text, KeyCode> _mapOfTextToKeyCode;
+    private Dictionary<Toggle, KeyCode> _mapOfToggleToKeyCode;
+    private Dictionary<Toggle, Text> _mapOfToggleToText;
 
     private void Start()
     {
         _camerasRenderPipelineManager = new CamerasRenderPipelineManager();
-        _defaultTextColor = masterIsActiveText.color;
+        _defaultToggleTextColor = masterIsActiveToggle.GetComponentInChildren<Text>().color;
         cameraRenderPresetDropdown.options = DropdownUtility.GetOptionsForEnum<ECamerasRenderPreset>();
         
-        _mapOfTextToKeyCode = new Dictionary<Text, KeyCode>
+        _mapOfToggleToKeyCode = new Dictionary<Toggle, KeyCode>
         {
-            { masterIsActiveText, KeyCode.Alpha1 },
-            { masterIsClearDepthText, KeyCode.Alpha2 },
-            { slaveIsActiveText, KeyCode.Alpha3 },
-            { slaveIsClearDepthText, KeyCode.Alpha4 }
+            { masterIsActiveToggle, KeyCode.Alpha1 },
+            { masterIsClearDepthToggle, KeyCode.Alpha2 },
+            { slaveIsActiveToggle, KeyCode.Alpha3 },
+            { slaveIsClearDepthToggle, KeyCode.Alpha4 }
         };
+
+        _mapOfToggleToText = new Dictionary<Toggle, Text>();
+        foreach (var toggle in _mapOfToggleToKeyCode.Keys)
+        {
+            var entry = new EventTrigger.Entry { eventID = EventTriggerType.PointerClick };
+            entry.callback.AddListener(data =>
+            {
+                if (toggle.interactable == false) return;
+
+                var keyCode = _mapOfToggleToKeyCode[toggle];
+                ToggleCameraRenderStateProperty(MapOfKeyCodeToCameraStatePropertyPath[keyCode]);
+            });
+            
+            toggle.gameObject.AddComponent<EventTrigger>().triggers = new List<EventTrigger.Entry> { entry };
+            _mapOfToggleToText[toggle] = toggle.GetComponentInChildren<Text>();
+        }
 
         UpdateCameras();
         UpdateUI();
@@ -81,10 +97,10 @@ public class CamerasRenderController : MonoBehaviour
     private void Update()
     {
         foreach (var key in MapOfKeyCodeToCameraStatePropertyPath.Keys.Where(Input.GetKeyDown))
-            ChangeProperty(MapOfKeyCodeToCameraStatePropertyPath[key]);
+            ToggleCameraRenderStateProperty(MapOfKeyCodeToCameraStatePropertyPath[key]);
     }
 
-    private void ChangeProperty(CameraRenderStatePropertyPath path)
+    private void ToggleCameraRenderStateProperty(CameraRenderStatePropertyPath path)
     {
         var isPropertyEnabled = _camerasRenderPipelineManager[path.CameraPriorityType, path.EnabledPropertyName];
         if (isPropertyEnabled == false) return;
@@ -103,33 +119,23 @@ public class CamerasRenderController : MonoBehaviour
         UpdateUI();
         UpdateCameras();
     }
-
+    
     private void UpdateUI()
     {
         cameraRenderPresetDropdown.value = (int) _camerasRenderPipelineManager.CamerasRenderPreset;
 
-        foreach (var pair in _mapOfTextToKeyCode)
-            ChangeText(pair.Key, MapOfKeyCodeToCameraStatePropertyPath[pair.Value], pair.Value);
+        foreach (var pair in _mapOfToggleToKeyCode)
+            UpdateToggle(pair.Key, MapOfKeyCodeToCameraStatePropertyPath[pair.Value]);
     }
 
-    private void ChangeText(Text target, CameraRenderStatePropertyPath path, KeyCode keyCode)
+    private void UpdateToggle(Toggle target, CameraRenderStatePropertyPath path)
     {
-        var key = string.Empty;
-        switch (keyCode)
-        {
-            case KeyCode.Alpha1: key = "1"; break;
-            case KeyCode.Alpha2: key = "2"; break;
-            case KeyCode.Alpha3: key = "3"; break;
-            case KeyCode.Alpha4: key = "4"; break;
-        }
-        
-        var getFunctionString = new Func<bool, string>(flag => flag ? "Enabled" : "Disabled");
-
         var propValue = _camerasRenderPipelineManager[path.CameraPriorityType, path.FunctionalPropertyName];
         var isEnabledProp = _camerasRenderPipelineManager[path.CameraPriorityType, path.EnabledPropertyName];
 
-        target.text = $"Key {key}. {getFunctionString(propValue)} {propValue.GetType().Name}";
-        target.color = isEnabledProp ? _defaultTextColor : disabledTextColor;
+        target.isOn = propValue;
+        target.interactable = isEnabledProp;
+        _mapOfToggleToText[target].color = isEnabledProp ? _defaultToggleTextColor : disabledToggleTextColor;
     }
 
     private void UpdateCameras()
