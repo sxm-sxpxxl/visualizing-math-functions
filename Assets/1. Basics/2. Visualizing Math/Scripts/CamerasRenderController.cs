@@ -4,14 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-public struct CameraRenderState
-{
-    public bool IsActive { get; set; }
-    public bool IsEnabledActive { get; set; }
-    public bool IsClearDepth { get; set; }
-    public bool IsEnabledClearDepth { get; set; }
-}
-
 public enum ECamerasRenderPreset
 {
     MasterCompletelyOverlapSlaveWithoutDistortion,
@@ -22,19 +14,64 @@ public enum ECamerasRenderPreset
     MasterOverlapSlaveWithDistortion
 }
 
+public enum ECameraRenderStatePropertyName
+{
+    IsActive,
+    IsEnabledActive,
+    IsClearDepth,
+    IsEnabledClearDepth
+}
+
 public enum ECameraPriorityType
 {
     Master,
     Slave
 }
 
-// todo: refactoring
+public struct MapPresetMaskToCameraState
+{
+    public ECameraPriorityType CameraPriorityType { get; set; }
+    public ECameraRenderStatePropertyName FunctionalPropertyName { get; set; }
+    public ECameraRenderStatePropertyName EnabledPropertyName { get; set; }
+}
+
+public class CameraRenderState
+{
+    public bool IsActive { get => this[ECameraRenderStatePropertyName.IsActive]; set => this[ECameraRenderStatePropertyName.IsActive] = value; }
+    public bool IsEnabledActive { get => this[ECameraRenderStatePropertyName.IsEnabledActive]; set => this[ECameraRenderStatePropertyName.IsEnabledActive] = value; }
+    public bool IsClearDepth { get => this[ECameraRenderStatePropertyName.IsClearDepth]; set => this[ECameraRenderStatePropertyName.IsClearDepth] = value; }
+    public bool IsEnabledClearDepth { get => this[ECameraRenderStatePropertyName.IsEnabledClearDepth]; set => this[ECameraRenderStatePropertyName.IsEnabledClearDepth] = value; }
+
+    private readonly Dictionary<ECameraRenderStatePropertyName, bool> _cameraProperties = new Dictionary<ECameraRenderStatePropertyName, bool>
+    {
+        { ECameraRenderStatePropertyName.IsActive, false },
+        { ECameraRenderStatePropertyName.IsEnabledActive, false },
+        { ECameraRenderStatePropertyName.IsClearDepth, false },
+        { ECameraRenderStatePropertyName.IsEnabledClearDepth, false }
+    };
+    
+    public bool this[ECameraRenderStatePropertyName propertyName]
+    {
+        get => _cameraProperties[propertyName];
+        set => _cameraProperties[propertyName] = value;
+    }
+}
+
 public class CamerasRenderPipelineManager
 {
-    public CameraRenderState MasterCameraState;
-    public CameraRenderState SlaveCameraState;
+    public CameraRenderState MasterCameraState => _cameraRenderStates[ECameraPriorityType.Master];
+    public CameraRenderState SlaveCameraState => _cameraRenderStates[ECameraPriorityType.Slave];
     public ECamerasRenderPreset CamerasRenderPreset;
 
+    private readonly Dictionary<ECameraPriorityType, CameraRenderState> _cameraRenderStates;
+    
+    // todo: why?
+    private bool this[ECameraPriorityType priorityType, ECameraRenderStatePropertyName propertyName]
+    {
+        get => _cameraRenderStates[priorityType][propertyName];
+        set => _cameraRenderStates[priorityType][propertyName] = value;
+    }
+    
     private readonly Dictionary<string, ECamerasRenderPreset> presetMasks = new Dictionary<string, ECamerasRenderPreset>
     {
         { "10xx", ECamerasRenderPreset.MasterCompletelyOverlapSlaveWithoutDistortion },
@@ -45,143 +82,124 @@ public class CamerasRenderPipelineManager
         { "1111", ECamerasRenderPreset.MasterOverlapSlaveWithDistortion }
     };
 
+    private readonly MapPresetMaskToCameraState[] presetMaskMaps =
+    {
+        new MapPresetMaskToCameraState
+        {
+            CameraPriorityType = ECameraPriorityType.Master,
+            FunctionalPropertyName = ECameraRenderStatePropertyName.IsActive,
+            EnabledPropertyName = ECameraRenderStatePropertyName.IsEnabledActive
+        },
+        new MapPresetMaskToCameraState
+        {
+            CameraPriorityType = ECameraPriorityType.Master,
+            FunctionalPropertyName = ECameraRenderStatePropertyName.IsClearDepth,
+            EnabledPropertyName = ECameraRenderStatePropertyName.IsEnabledClearDepth
+        },
+        new MapPresetMaskToCameraState
+        {
+            CameraPriorityType = ECameraPriorityType.Slave,
+            FunctionalPropertyName = ECameraRenderStatePropertyName.IsActive,
+            EnabledPropertyName = ECameraRenderStatePropertyName.IsEnabledActive
+        },
+        new MapPresetMaskToCameraState
+        {
+            CameraPriorityType = ECameraPriorityType.Slave,
+            FunctionalPropertyName = ECameraRenderStatePropertyName.IsClearDepth,
+            EnabledPropertyName = ECameraRenderStatePropertyName.IsEnabledClearDepth
+        }
+    };
+
     public CamerasRenderPipelineManager()
     {
-        MasterCameraState = new CameraRenderState { IsActive = true, IsClearDepth = false };
-        SlaveCameraState = new CameraRenderState { IsActive = true, IsClearDepth = true };
-        UpdateCamerasRenderPreset();
-    }
-
-    public void TrySetActive(ECameraPriorityType cameraPriorityType, bool active)
-    {
-        switch (cameraPriorityType)
+        _cameraRenderStates = new Dictionary<ECameraPriorityType, CameraRenderState>
         {
-            case ECameraPriorityType.Master:
-                MasterCameraState.IsActive = active;
-                break;
-            case ECameraPriorityType.Slave:
-                SlaveCameraState.IsActive = active;
-                break;
-        }
-
-        UpdateCamerasRenderPreset();
-    }
-
-    public void TrySetClearDepthBuffer(ECameraPriorityType cameraPriorityType, bool clearDepth)
-    {
-        switch (cameraPriorityType)
-        {
-            case ECameraPriorityType.Master:
-                MasterCameraState.IsClearDepth = clearDepth;
-                break;
-            case ECameraPriorityType.Slave:
-                SlaveCameraState.IsClearDepth = clearDepth;
-                break;
-        }
-
-        UpdateCamerasRenderPreset();
-    }
-
-    // todo: refactoring
-    public void SetCamerasRenderPreset(ECamerasRenderPreset camerasRenderPreset)
-    {
-        var newCameraRenderStateMask = new[]
-        {
-            MasterCameraState.IsActive,
-            MasterCameraState.IsClearDepth,
-            SlaveCameraState.IsActive,
-            SlaveCameraState.IsClearDepth
+            { ECameraPriorityType.Master, new CameraRenderState { IsActive = true, IsClearDepth = false } },
+            { ECameraPriorityType.Slave, new CameraRenderState { IsActive = true, IsClearDepth = true } }
         };
-        var currentCameraRenderEnabledStateMask = new []
-        {
-            MasterCameraState.IsEnabledActive,
-            MasterCameraState.IsEnabledClearDepth,
-            SlaveCameraState.IsEnabledActive,
-            SlaveCameraState.IsEnabledClearDepth
-        };
-        
+        // todo: why?
+        UpdateCamerasRenderPreset();
+    }
+
+    public void SetCameraRenderStateProperty(
+        ECameraPriorityType cameraPriorityType,
+        ECameraRenderStatePropertyName propertyName,
+        bool value)
+    {
+        this[cameraPriorityType, propertyName] = value;
+        UpdateCamerasRenderPreset();
+    }
+
+    /// <summary>
+    /// SetCamerasRenderPreset устанавливает пресет и подгоняет текущее функ. состояние под него
+    /// а затем обновляет состояние отображения для текущего пресета
+    /// </summary>
+    public void SetCamerasRenderPreset(ECamerasRenderPreset preset)
+    {
+        CamerasRenderPreset = preset;
         var matchedPresetMask = presetMasks
-            .First(mask => mask.Value == camerasRenderPreset).Key;
+            .First(mask => mask.Value == preset).Key;
 
         for (var i = 0; i < matchedPresetMask.Length; i++)
         {
-            if (matchedPresetMask[i] == 'x')
-            {
-                currentCameraRenderEnabledStateMask[i] = false;
-                continue;
-            }
+            var targetPresetMaskMap = presetMaskMaps[i];
+            this[targetPresetMaskMap.CameraPriorityType, targetPresetMaskMap.EnabledPropertyName] = matchedPresetMask[i] != 'x';
+                
+            if (matchedPresetMask[i] == 'x') continue;
 
             var convertedPresetMaskElement = Convert.ToBoolean(Convert.ToInt32(Convert.ToString(matchedPresetMask[i])));
-            newCameraRenderStateMask[i] = convertedPresetMaskElement;
-            currentCameraRenderEnabledStateMask[i] = true;
+            this[targetPresetMaskMap.CameraPriorityType, targetPresetMaskMap.FunctionalPropertyName] = convertedPresetMaskElement;
+        }
+
+        // todo: why?
+        if (SlaveCameraState.IsActive == false)
+        {
+            MasterCameraState.IsEnabledActive = false;
+        }
+        
+        if (MasterCameraState.IsActive == false)
+        {
+            SlaveCameraState.IsEnabledActive = false;
         }
         
         if (matchedPresetMask[0] == '0' && matchedPresetMask[2] == 'x')
         {
-            newCameraRenderStateMask[2] = true;
+            SlaveCameraState.IsActive = true;
+            // this[ECameraPriorityType.Slave, ECameraRenderStatePropertyName.IsActive] = true;
+            // this[ECameraPriorityType.Slave, ECameraRenderStatePropertyName.IsEnabledActive] = false;
         }
             
         if (matchedPresetMask[2] == '0' && matchedPresetMask[0] == 'x')
         {
-            newCameraRenderStateMask[0] = true;
+            MasterCameraState.IsActive = true;
+            // this[ECameraPriorityType.Master, ECameraRenderStatePropertyName.IsActive] = true;
+            // this[ECameraPriorityType.Master, ECameraRenderStatePropertyName.IsEnabledActive] = false;
         }
-        
-        MasterCameraState.IsActive = newCameraRenderStateMask[0];
-        MasterCameraState.IsClearDepth = newCameraRenderStateMask[1];
-        SlaveCameraState.IsActive = newCameraRenderStateMask[2];
-        SlaveCameraState.IsClearDepth = newCameraRenderStateMask[3];
-
-        CamerasRenderPreset = camerasRenderPreset;
-        
-        MasterCameraState.IsEnabledActive = currentCameraRenderEnabledStateMask[0];
-        MasterCameraState.IsEnabledClearDepth = currentCameraRenderEnabledStateMask[1];
-        SlaveCameraState.IsEnabledActive = currentCameraRenderEnabledStateMask[2];
-        SlaveCameraState.IsEnabledClearDepth = currentCameraRenderEnabledStateMask[3];
     }
     
-    // todo: refactoring
+    /// <summary>
+    /// UpdateCamerasRenderPreset подгоняет пресет под измененное функ. состояние
+    /// и затем обновляет состояние отображение для полученного пресета
+    /// </summary>
     private void UpdateCamerasRenderPreset()
     {
-        var currentCameraRenderStateMask = new []
-        {
-            MasterCameraState.IsActive,
-            MasterCameraState.IsClearDepth,
-            SlaveCameraState.IsActive,
-            SlaveCameraState.IsClearDepth
-        };
-        var currentCameraRenderEnabledStateMask = new []
-        {
-            MasterCameraState.IsEnabledActive,
-            MasterCameraState.IsEnabledClearDepth,
-            SlaveCameraState.IsEnabledActive,
-            SlaveCameraState.IsEnabledClearDepth
-        };
-
         foreach (var currentPresetMask in presetMasks.Keys)
         {
             var isMatchPresetMask = true;
             for (var i = 0; i < currentPresetMask.Length; i++)
             {
-                if (currentPresetMask[i] == 'x')
-                {
-                    currentCameraRenderEnabledStateMask[i] = false;
-                    continue;
-                }
+                if (currentPresetMask[i] == 'x') continue;
+
+                var targetPresetMaskMap = presetMaskMaps[i];
+                var matchedProperty = this[targetPresetMaskMap.CameraPriorityType, targetPresetMaskMap.FunctionalPropertyName];
 
                 var convertedPresetMaskElement = Convert.ToBoolean(Convert.ToInt32(Convert.ToString(currentPresetMask[i])));
-                isMatchPresetMask &= convertedPresetMaskElement == currentCameraRenderStateMask[i];
-                currentCameraRenderEnabledStateMask[i] = true;
+                isMatchPresetMask &= convertedPresetMaskElement == matchedProperty;
             }
 
             if (isMatchPresetMask)
             {
-                CamerasRenderPreset = presetMasks[currentPresetMask];
-                
-                MasterCameraState.IsEnabledActive = currentCameraRenderEnabledStateMask[0];
-                MasterCameraState.IsEnabledClearDepth = currentCameraRenderEnabledStateMask[1];
-                SlaveCameraState.IsEnabledActive = currentCameraRenderEnabledStateMask[2];
-                SlaveCameraState.IsEnabledClearDepth = currentCameraRenderEnabledStateMask[3];
-                
+                SetCamerasRenderPreset(presetMasks[currentPresetMask]);
                 return;
             }
         }
@@ -204,11 +222,11 @@ public class CamerasRenderController : MonoBehaviour
     [SerializeField] private Color disabledTextColor;
     private Color defaultTextColor;
 
-    private CamerasRenderPipelineManager _camerasRenderStateManager;
+    private CamerasRenderPipelineManager _camerasRenderPipelineManager;
     
     private void Start()
     {
-        _camerasRenderStateManager = new CamerasRenderPipelineManager();
+        _camerasRenderPipelineManager = new CamerasRenderPipelineManager();
         defaultTextColor = masterIsActiveText.color;
         cameraRenderPresetDropdown.options = Enum.GetValues(typeof(ECamerasRenderPreset))
             .Cast<ECamerasRenderPreset>()
@@ -223,42 +241,42 @@ public class CamerasRenderController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            var masterCameraState = _camerasRenderStateManager.MasterCameraState;
+            var masterCameraState = _camerasRenderPipelineManager.MasterCameraState;
 
             if (masterCameraState.IsEnabledActive == false) return;
             
-            _camerasRenderStateManager.TrySetActive(ECameraPriorityType.Master, !masterCameraState.IsActive);
+            _camerasRenderPipelineManager.SetCameraRenderStateProperty(ECameraPriorityType.Master, ECameraRenderStatePropertyName.IsActive, !masterCameraState.IsActive);
             UpdateUI();
             UpdateCameras();
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            var masterCameraState = _camerasRenderStateManager.MasterCameraState;
+            var masterCameraState = _camerasRenderPipelineManager.MasterCameraState;
             
             if (masterCameraState.IsEnabledClearDepth == false) return;
             
-            _camerasRenderStateManager.TrySetClearDepthBuffer(ECameraPriorityType.Master, !masterCameraState.IsClearDepth);
+            _camerasRenderPipelineManager.SetCameraRenderStateProperty(ECameraPriorityType.Master, ECameraRenderStatePropertyName.IsClearDepth, !masterCameraState.IsClearDepth);
             UpdateUI();
             UpdateCameras();
         }
         
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            var slaveCameraState = _camerasRenderStateManager.SlaveCameraState;
+            var slaveCameraState = _camerasRenderPipelineManager.SlaveCameraState;
             
             if (slaveCameraState.IsEnabledActive == false) return;
             
-            _camerasRenderStateManager.TrySetActive(ECameraPriorityType.Slave, !slaveCameraState.IsActive);
+            _camerasRenderPipelineManager.SetCameraRenderStateProperty(ECameraPriorityType.Slave, ECameraRenderStatePropertyName.IsActive, !slaveCameraState.IsActive);
             UpdateUI();
             UpdateCameras();
         }
         if (Input.GetKeyDown(KeyCode.Alpha4))
         {
-            var slaveCameraState = _camerasRenderStateManager.SlaveCameraState;
+            var slaveCameraState = _camerasRenderPipelineManager.SlaveCameraState;
             
             if (slaveCameraState.IsEnabledClearDepth == false) return;
             
-            _camerasRenderStateManager.TrySetClearDepthBuffer(ECameraPriorityType.Slave, !slaveCameraState.IsClearDepth);
+            _camerasRenderPipelineManager.SetCameraRenderStateProperty(ECameraPriorityType.Slave, ECameraRenderStatePropertyName.IsClearDepth, !slaveCameraState.IsClearDepth);
             UpdateUI();
             UpdateCameras();
         }
@@ -266,18 +284,18 @@ public class CamerasRenderController : MonoBehaviour
 
     public void SetCameraRenderPreset(int cameraRenderPreset)
     {
-        _camerasRenderStateManager.SetCamerasRenderPreset((ECamerasRenderPreset) cameraRenderPreset);
+        _camerasRenderPipelineManager.SetCamerasRenderPreset((ECamerasRenderPreset) cameraRenderPreset);
         UpdateUI();
         UpdateCameras();
     }
 
     private void UpdateUI()
     {
-        var masterCameraState = _camerasRenderStateManager.MasterCameraState;
-        var slaveCameraState = _camerasRenderStateManager.SlaveCameraState;
+        var masterCameraState = _camerasRenderPipelineManager.MasterCameraState;
+        var slaveCameraState = _camerasRenderPipelineManager.SlaveCameraState;
         var getFunctionString = new Func<bool, string>(flag => flag ? "Enabled" : "Disabled");
 
-        cameraRenderPresetDropdown.value = (int) _camerasRenderStateManager.CamerasRenderPreset;
+        cameraRenderPresetDropdown.value = (int) _camerasRenderPipelineManager.CamerasRenderPreset;
 
         masterIsActiveText.text = $"Key 1. {getFunctionString(masterCameraState.IsActive)} IsActive";
         masterIsActiveText.color = masterCameraState.IsEnabledActive ? defaultTextColor : disabledTextColor;
@@ -294,8 +312,8 @@ public class CamerasRenderController : MonoBehaviour
 
     private void UpdateCameras()
     {
-        UpdateCamera(masterCamera, _camerasRenderStateManager.MasterCameraState, true);
-        UpdateCamera(slaveCamera, _camerasRenderStateManager.SlaveCameraState);
+        UpdateCamera(masterCamera, _camerasRenderPipelineManager.MasterCameraState, true);
+        UpdateCamera(slaveCamera, _camerasRenderPipelineManager.SlaveCameraState);
     }
 
     private static void UpdateCamera(Camera targetCamera, CameraRenderState cameraRenderState, bool toggleActiveForParent = false)
