@@ -5,14 +5,14 @@ public class CameraMovement : MonoBehaviour
 {
     [SerializeField] [Range(0.5f, 1f)] private float rotationSpeed = 0.5f;
     [SerializeField] private ZoomInfo zoom;
-    
+
     [Serializable] public class ZoomInfo
     {
         [Range(0.5f, 1f)] public float speed = 0.5f;
         public float minScale = 0.8f;
         public float maxScale = 2f;
     }
-
+    
     private void Update()
     {
         var normal = 100f;

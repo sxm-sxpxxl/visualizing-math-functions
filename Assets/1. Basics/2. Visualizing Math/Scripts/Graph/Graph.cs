@@ -2,12 +2,13 @@
 
 public class Graph : MonoBehaviour
 {
+    public EGraphFunctionName functionName = EGraphFunctionName.Sine;
+    
     [SerializeField] private Transform pointPrefab;
     [SerializeField] [Range(10, 300)] private int resolution = 50;
-    [SerializeField] private EGraphFunctionName function = EGraphFunctionName.Sine;
     
     private Transform[] _points;
-    private GraphFunction.Function _graphFunction = GraphFunction.Set(EGraphFunctionName.Sine);
+    private GraphFunctions.Function _graphFunction = GraphFunctions.Set(EGraphFunctionName.Sine);
     
     private void Awake()
     {
@@ -26,7 +27,7 @@ public class Graph : MonoBehaviour
     private void Update()
     {
         var t = 2f * Time.time;
-        _graphFunction = GraphFunction.Set(function);
+        _graphFunction = GraphFunctions.Set(functionName);
 
         var step = 2f / resolution;
         for (int i = 0, z = 0; z < resolution; z++)

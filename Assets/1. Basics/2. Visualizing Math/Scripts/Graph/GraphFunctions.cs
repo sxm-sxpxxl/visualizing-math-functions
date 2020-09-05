@@ -15,7 +15,7 @@ public enum EGraphFunctionName
     Torus
 }
 
-public static class GraphFunction
+public static class GraphFunctions
 {
     public delegate Vector3 Function(float u, float v, float t);
     private const float Pi = Mathf.PI;
