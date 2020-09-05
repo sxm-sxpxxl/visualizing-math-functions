@@ -19,4 +19,19 @@ public static class PrimitiveTypeExtensions
         
         return Convert.ToBoolean(Convert.ToInt32(Convert.ToString(ch)));
     }
+
+    // 1:00:00 [hours != 0] or 0:00 [hours == 0]
+    public static string ToStringInRelevantFormat(this TimeSpan span, int totalHours)
+    {
+        var hoursFormat = totalHours == 0 ? string.Empty : @"h\:m";
+        return span.ToString(hoursFormat + @"m\:ss");
+    }
+    
+    public static string ToStringInRelevantFormat(this TimeSpan span) => span.ToStringInRelevantFormat(span.Hours);
+
+    // 0:00:00 / 1:00:00 [hours != 0] or 0:00 / 1:00 [hours == 0]
+    public static string BuildStringInRelevantFormatWithSpans(TimeSpan firstSpan, TimeSpan secondSpan)
+    {
+        return firstSpan.ToStringInRelevantFormat(firstSpan.Hours) + " / " + secondSpan.ToStringInRelevantFormat();
+    }
 }
